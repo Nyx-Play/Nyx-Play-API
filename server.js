@@ -18,7 +18,11 @@ mongoose.connect(process.env.MONGODB_URI, {
 })
 .then(() => console.log('Connected to MongoDB'))
 .catch(error => console.error('Could not connect to MongoDB', error));
-
+// Ping endpoint that does not require authorization
+app.get('/ping', (req, res) => {
+    res.status(200).json({ message: 'Pong' });
+  });
+  
 // Backend middleware to check API key
 app.use('/games', (req, res, next) => {
     console.log('Received headers:', req.headers);
