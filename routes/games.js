@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Game = require('../models/Game');
+const Game = require('../models/ggame');
 
 // Create a new game
 router.post('/', async (req, res) => {
