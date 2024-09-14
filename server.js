@@ -1,41 +1,31 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const cors = require('cors'); // Import CORS
+const cors = require('cors');
 const gamesRoutes = require('./routes/games');
-require('dotenv').config(); // Load environment variables from .env
+const authRoutes = require('./routes/auth'); 
+require('dotenv').config();
 
 const app = express();
 app.use(bodyParser.json());
+app.use(cors());
 
-// Enable CORS
-app.use(cors()); // Use CORS to allow requests from different origins
-
-// Connect to MongoDB using the connection string from the environment variable
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+mongoose.connect(process.env.MONGODB_URI)
 .then(() => console.log('Connected to MongoDB'))
 .catch(error => console.error('Could not connect to MongoDB', error));
-// Ping endpoint that does not require authorization
 app.get('/ping', (req, res) => {
-    res.status(200).json({ message: 'Pong' });
-  });
-  
-// Backend middleware to check API key
+  res.status(200).json({ message: 'Pong' });
+});
+app.use('/auth', authRoutes); // Use auth routes
 app.use('/games', (req, res, next) => {
-    console.log('Received headers:', req.headers);
-    const apiKey = req.headers['authorization'];
-    if (apiKey === `Bearer ${process.env.API_KEY}`) {
-      next(); // API key is valid, proceed to the routes
-    } else {
-      res.status(403).json({ message: 'Forbidden: Invalid API key' });
-    }
-  }, gamesRoutes);
+  const apiKey = req.headers['authorization'];
+  if (apiKey === `Bearer ${process.env.API_KEY}`) {
+    next();
+  } else {
+    res.status(403).json({ message: 'Forbidden: Invalid API key' });
+  }
+}, gamesRoutes);
 
-
-// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
